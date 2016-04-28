@@ -1,6 +1,7 @@
 /schema.sql
 /BackEnd.db
 .idea/
+/static/jquery.js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

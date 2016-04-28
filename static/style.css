@@ -21,6 +21,10 @@ h2 {
     font-size: 1.2em;
 }
 
+#upper {
+    font-variant: small-caps;
+}
+
 .page {
     margin: 2em auto;
     /*width: 50%;*/

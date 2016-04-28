@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-    The champion mastery list for <h1>{{ session['summoner_name'] }}</h1>
+    The champion mastery list for <h1 id="upper">{{ session['summoner_name'] }}</h1>
     {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
     <form action="{{ url_for('show_mastery') }}" method=post style="float: right">
         <dl>
@@ -21,5 +21,4 @@
             </div>
         </div>
     {% endfor %}
-
 {% endblock %}

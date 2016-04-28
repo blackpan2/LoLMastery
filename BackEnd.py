@@ -4,9 +4,12 @@ import cassiopeia as cass
 import sqlalchemy
 from cassiopeia.type.core.common import LoadPolicy
 from cassiopeia import riotapi
+from past.builtins import cmp
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime
+from operator import itemgetter as i
+from functools import cmp_to_key
 
 __author__ = 'George Herde'
 
@@ -142,7 +145,7 @@ def check_mastery_exists(summoner_id, champion_id):
 
 
 def insert_champion_mastery(summoner, champion_obj):
-    print("Started {0}...".format(champion_obj.name))
+    # print("Started {0}...".format(champion_obj.name), end="")
     try:
         api_mastery = cass.riotapi.get_champion_mastery(summoner=summoner, champion=champion_obj)
         api_successful = True
@@ -167,11 +170,12 @@ def insert_champion_mastery(summoner, champion_obj):
         else:
             global_session.add(mastery)
             global_session.commit()
-        print("Finished {0}...".format(champion_obj.name))
+            # print("Finished {0}...".format(champion_obj.name))
+    return api_successful
 
 
 def generate_mastery_controller(summoner_name):
-    generate_mastery(summoner_obj(summoner_name))
+    return generate_mastery(summoner_obj(summoner_name))
 
 
 def generate_mastery(summoner_item):
@@ -180,9 +184,12 @@ def generate_mastery(summoner_item):
     list_champions = cass.riotapi.get_champions()
     print("Pulled summoner. Got {0}.".format(summoner_item.name))
     print("Generating champion mastery information")
+    failed_updates = []
     for champ in list_champions:
         insert_champion(champ)
-        insert_champion_mastery(summoner_item, champ)
+        if not insert_champion_mastery(summoner_item, champ):
+            failed_updates.append(champ.name)
+    return failed_updates
 
 
 def select_summoner_champion_mastery_controller(summoner_name):
@@ -194,15 +201,14 @@ def select_summoner_champion_mastery(summoner_item):
     #   WHERE Summoner.id == Mastery.summoner_id
     #       AND Champion.id == Mastery.champion_id
     #       AND Summoner.user == 'blackpan2'; # Blackpan2 as an example
-    results = global_session.query(BackendMastery).filter(BackendMastery.summoner_id == summoner_item.id).all()
     unsorted_collection = []
-    for item in results:
+    for item in global_session.query(BackendMastery).filter(BackendMastery.summoner_id == summoner_item.id).all():
         # noinspection PyDictCreation
         return_item = {}
         return_item['id'] = item.summoner_id
         return_item['summoner'] = summoner_item.name
-        return_item['champion'] = cass.riotapi.get_champion_by_id(item.champion_id).name
-        print(cass.riotapi.get_champion_by_id(item.champion_id).name)
+        return_item['champion'] = global_session.query(BackendChampion).filter(
+            BackendChampion.id == item.champion_id).one().name
         return_item['level'] = item.level
         return_item['points'] = item.points
         return_item['since_last_level'] = item.since_last_level
@@ -210,12 +216,18 @@ def select_summoner_champion_mastery(summoner_item):
         return_item['last_played'] = item.last_played
         return_item['high_grade'] = item.high_grade
         return_item['chest'] = item.chest
-        # print(return_item)
         unsorted_collection.append(return_item)
+    return multi_key_sort(unsorted_collection, ['-points', 'champion'])
 
-    return_collection = sorted(sorted(unsorted_collection, key=itemgetter('champion'), reverse=True),
-                               key=itemgetter('points'), reverse=True)
-    return return_collection
+
+def multi_key_sort(items, columns):
+    comparators = [((i(col[1:].strip()), -1) if col.startswith('-') else (i(col.strip()), 1)) for col in columns]
+
+    def comparator(left, right):
+        comparator_iter = (cmp(fn(left), fn(right)) * multi for fn, multi in comparators)
+        return next((result for result in comparator_iter if result), 0)
+
+    return sorted(items, key=cmp_to_key(comparator))
 
 
 def summoner_obj(summoner_name):
@@ -238,10 +250,10 @@ def main_controller(summoner_name):
     if new:
         generate_mastery_controller(summoner_name)
     result = select_summoner_champion_mastery_controller(summoner_name)
-    # print(result)
+    print(result)
 
 
 if __name__ == "__main__":
     # main("blackpan2")
     main_controller("blackpan2")
-    main_controller("rivverrun")
+    # main_controller("rivverrun")
