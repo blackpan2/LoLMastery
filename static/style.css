@@ -29,7 +29,6 @@ h2 {
     background: white;
 }
 
-
 .add-entry {
     font-size: 0.9em;
     border-bottom: 1px solid #ccc;
@@ -65,10 +64,11 @@ h2 {
     font-size: 16px;
     line-height: 28px;
 }
+
 .champion-mastery h3 {
     font-weight: bold;
 }
 
-.champion-mastery-detail{
+.champion-mastery-detail {
     padding-left: 5em;
 }

@@ -1,9 +1,15 @@
 {% extends "layout.html" %}
 {% block body %}
-    The champion mastery list for <h1>{{ session['username'] }}</h1>
+    The champion mastery list for <h1>{{ session['summoner_name'] }}</h1>
+    {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+    <form action="{{ url_for('show_mastery') }}" method=post style="float: right">
+        <dl>
+            <dd><input type=submit value=Update>
+        </dl>
+    </form>
+
     {% for champion in session['mastery_data'] %}
         <div class="champion-mastery">
-            {#            <p>{{ champion[0] }} {{ champion[1] }} {{ champion[2] }}</p>#}
             <h3>Champion:</h3>
             <p>{{ champion[0] }}</p><br>
             <div class="champion-mastery-detail">
@@ -12,9 +18,7 @@
                 <h3>Points:</h3>
                 <p>{{ champion[2] }}</p>
             </div>
-
         </div>
     {% endfor %}
-
     <p><a href="{{ url_for('search_summoner') }}">Search again</a></p>
 {% endblock %}
