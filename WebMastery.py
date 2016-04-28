@@ -21,9 +21,9 @@ def search_summoner():
         if request.form['summoner_name'] == "":
             return render_template('search.html')
         session['summoner_name'] = request.form['summoner_name']
-        session['if_new'] = BackEnd.insert_summoner(session['summoner_name'])
+        session['if_new'] = BackEnd.insert_summoner_controller(session['summoner_name'])
         if session['if_new']:
-            BackEnd.generate_mastery(session['summoner_name'])
+            BackEnd.generate_mastery_controller(session['summoner_name'])
         return redirect(url_for('show_mastery'))
     # show the form, it wasn't submitted
     return render_template('search.html')
@@ -32,10 +32,10 @@ def search_summoner():
 @app.route('/mastery', methods=['GET', 'POST'])
 def show_mastery():
     if request.method == 'POST':
-        BackEnd.generate_mastery(session['summoner_name'])
+        BackEnd.generate_mastery_controller(session['summoner_name'])
         flash('Updating Mastery')
         return redirect(url_for('show_mastery'))
-    session['mastery_data'] = BackEnd.select_summoner_champion_mastery(session['summoner_name'])
+    session['mastery_data'] = BackEnd.select_summoner_champion_mastery_controller(session['summoner_name'])
     return render_template('mastery.html', session=session)
 
 

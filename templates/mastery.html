@@ -7,18 +7,19 @@
             <dd><input type=submit value=Update>
         </dl>
     </form>
+    <p><a href="{{ url_for('search_summoner') }}">Search again</a></p>
 
     {% for champion in session['mastery_data'] %}
         <div class="champion-mastery">
             <h3>Champion:</h3>
-            <p>{{ champion[0] }}</p><br>
+            <p>{{ champion['champion'] }}</p><br>
             <div class="champion-mastery-detail">
                 <h3>Mastery Level:</h3>
-                <p>{{ champion[1] }}</p>
+                <p>{{ champion['level'] }}</p>
                 <h3>Points:</h3>
-                <p>{{ champion[2] }}</p>
+                <p>{{ champion['points'] }}</p>
             </div>
         </div>
     {% endfor %}
-    <p><a href="{{ url_for('search_summoner') }}">Search again</a></p>
+
 {% endblock %}

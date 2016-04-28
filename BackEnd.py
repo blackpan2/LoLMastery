@@ -1,148 +1,86 @@
+from operator import itemgetter
 from os import environ
-import sqlalchemy
-from sqlalchemy import exc
 import cassiopeia as cass
-from cassiopeia.type.core.staticdata import Champion
+import sqlalchemy
+from cassiopeia.type.core.common import LoadPolicy
+from cassiopeia import riotapi
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime
 
 __author__ = 'George Herde'
 
-
-def insert_summoner(summoner_name):
-    summoner = cass.riotapi.get_summoner_by_name(name=summoner_name)
-    engine, summoner_table, champion_table, mastery_table = setup_sql_alchemy()
-    print(summoner.id)
-    ins = summoner_table.insert().values(id=summoner.id, user=summoner.name, level=summoner.level,
-                                         icon=summoner.profile_icon_id, revision_date=summoner.modify_date)
-    try:
-        conn = engine.connect()
-        result = conn.execute(ins)
-        print("Summoner added to database")
-        new = True
-        result.close()
-    except exc.IntegrityError:
-        print("Summoner already in database")
-        new = False
-
-    return new
+# ITERATION USING SESSION
+Base = declarative_base()
+global_session = 0
 
 
-def insert_champion(champion):
-    engine, summoner_table, champion_table, mastery_table = setup_sql_alchemy()
-    ins = champion_table.insert().values(id=champion.id, name=champion.name, title=champion.title)
-    conn = engine.connect()
-    try:
-        result = conn.execute(ins)
-        print("Champion added to database.")
-        result.close()
-    except exc.IntegrityError:
-        # pass
-        print("Champion already in database")
+class BackendSummoner(Base):
+    __tablename__ = 'Summoner'
+    id = Column(Integer, primary_key=True)
+    user = Column(String(20))
+    level = Column(Integer)
+    icon = Column(Integer)
+    revision_date = Column(DateTime)
+
+    def __repr__(self):
+        return "<Summoner(username='%s', id='%i', level='%i', icon='%i', revision='%s')>" % (
+            self.user, self.id, self.level, self.icon, self.revision_date)
 
 
-def insert_champion_mastery(summoner, champ):
-    engine, summoner_table, champion_table, mastery_table = setup_sql_alchemy()
-    from cassiopeia.type.core.staticdata import Champion
-    if isinstance(champ, Champion):
-        try:
-            champ_mastery = cass.riotapi.get_champion_mastery(summoner=summoner, champion=champ)
-            ins = mastery_table.insert().values(summoner_id=summoner.id, champion_id=champ.id,
-                                                level=champ_mastery.level, points=champ_mastery.points,
-                                                since_last_level=champ_mastery.points_since_last_level,
-                                                until_next_level=champ_mastery.points_until_next_level,
-                                                last_played=champ_mastery.last_played,
-                                                high_grade=champ_mastery.highest_grade,
-                                                chest=champ_mastery.chest_granted)
-            conn = engine.connect()
-            try:
-                result = conn.execute(ins)
-                # print("Champion Mastery entry added to database.")
-                result.close()
-            except exc.IntegrityError:
-                from sqlalchemy.sql.elements import and_
-                mastery_table.update(). \
-                    where(and_(mastery_table.c.summoner_id == summoner.id,
-                               mastery_table.c.champion_id == champ.id)). \
-                    values(summoner_id=summoner.id, champion_id=champ.id, level=champ_mastery.level,
-                           points=champ_mastery.points, since_last_level=champ_mastery.points_since_last_level,
-                           until_next_level=champ_mastery.points_until_next_level,
-                           last_played=champ_mastery.last_played,
-                           high_grade=champ_mastery.highest_grade, chest=champ_mastery.chest_granted)
-                # print("Champion Mastery already in database. Entry updated")
-        except cass.type.api.exception.APIError:
-            print("Server 500 error retry later")
-            # print("_______________________________________")
+class BackendChampion(Base):
+    __tablename__ = 'Champion'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(20))
+    title = Column(String(50))
+
+    def __repr__(self):
+        return "<Champion(name='%s', title='%s', id='%i')>" % (
+            self.name, self.title, self.id)
 
 
-def generate_mastery(summoner_name):
-    # Fill the database with the user's information
-    list_champions, summoner = generation_resources(summoner_name)
-    print("Pulled summoner. Got {0}.".format(summoner_name))
-    print("Generating champion mastery information")
-    for champ in list_champions:
-        insert_champion(champ)
-        insert_champion_mastery(summoner, champ)
+class BackendMastery(Base):
+    __tablename__ = 'Mastery'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    summoner_id = Column(Integer, ForeignKey('Summoner.id'))
+    champion_id = Column(Integer, ForeignKey('Champion.id'))
+    level = Column(Integer)
+    points = Column(Integer)
+    since_last_level = Column(Integer)
+    until_next_level = Column(Integer)
+    last_played = Column(Integer)
+    high_grade = Column(String(5))
+    chest = Column(Boolean)
+
+    def __repr__(self):
+        return "<Mastery(summoner='%i', champion='%i', level='%i', points='%i', chest='%s')>" % (
+            self.summoner_id, self.champion_id, self.level, self.points, self.chest)
 
 
-def generation_resources(summoner_name):
-    summoner = cass.riotapi.get_summoner_by_name(name=summoner_name)
-    list_champions = cass.riotapi.get_champions()
-    return list_champions, summoner
-
-
-def select_summoner_champion_mastery(summoner_name):
-    engine, summoner_table, champion_table, mastery_table = setup_sql_alchemy()
-    # SELECT Champion.*, Mastery.* FROM Champion, Mastery, Summoner
-    #   WHERE Summoner.id == Mastery.summoner_id
-    #       AND Champion.id == Mastery.champion_id
-    #       AND Summoner.user == 'blackpan2'; # Blackpan2 as an example
-    s = sqlalchemy.select([champion_table, mastery_table]). \
-        where(sqlalchemy.and_(summoner_table.c.user == summoner_name,
-                              summoner_table.c.id == mastery_table.c.summoner_id,
-                              champion_table.c.id == mastery_table.c.champion_id)). \
-        order_by(sqlalchemy.desc(mastery_table.c.points), sqlalchemy.asc(champion_table.c.name))
-    conn = engine.connect()
-    result = conn.execute(s)
-
-    return_collection = []
-    for row in result:
-        return_collection.append([row['name'], row['level'], row['points']])
-
-    result.close()
-    return return_collection
+def init():
+    setup_sql_alchemy()
+    setup_riot_api()
+    print("init complete...")
 
 
 def setup_sql_alchemy():
     # Uncomment next line and comment following line to print database calls to the console during runtime
     # engine = create_engine('sqlite:///./lib/backend.db', echo=True)
     engine = sqlalchemy.create_engine('sqlite:///./backend.db')
-    metadata = sqlalchemy.MetaData()
-    summoners = sqlalchemy.Table('Summoner', metadata,
-                                 sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True),
-                                 sqlalchemy.Column('user', sqlalchemy.String(20)),
-                                 sqlalchemy.Column('level', sqlalchemy.Integer),
-                                 sqlalchemy.Column('icon', sqlalchemy.Integer),
-                                 sqlalchemy.Column('revision_date', sqlalchemy.Integer),
-                                 )
-    champion = sqlalchemy.Table('Champion', metadata,
-                                sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True),
-                                sqlalchemy.Column('name', sqlalchemy.String(20)),
-                                sqlalchemy.Column('title', sqlalchemy.String(25)),
-                                )
-    mastery = sqlalchemy.Table('Mastery', metadata,
-                               sqlalchemy.Column('id', sqlalchemy.Integer, primary_key=True, autoincrement=True),
-                               sqlalchemy.Column('summoner_id', None, sqlalchemy.ForeignKey('Summoner.id')),
-                               sqlalchemy.Column('champion_id', None, sqlalchemy.ForeignKey('Champion.id')),
-                               sqlalchemy.Column('level', sqlalchemy.Integer),
-                               sqlalchemy.Column('points', sqlalchemy.Integer),
-                               sqlalchemy.Column('since_last_level', sqlalchemy.Integer),
-                               sqlalchemy.Column('until_next_level', sqlalchemy.Integer),
-                               sqlalchemy.Column('last_played', sqlalchemy.Integer),
-                               sqlalchemy.Column('high_grade', sqlalchemy.String(5)),
-                               sqlalchemy.Column('chest', sqlalchemy.String(5)),
-                               )
-    metadata.create_all(engine)
+
+    # Construct a sessionmaker object
+    # noinspection PyPep8Naming
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+
+    session = Session()
+
+    # Create all the tables in the database
+    Base.metadata.create_all(engine)
+
+    global global_session
+    global_session = session
     # print("database setup complete...")
-    return engine, summoners, champion, mastery
 
 
 def setup_riot_api():
@@ -153,25 +91,157 @@ def setup_riot_api():
     # Uncomment next line to print Riot API calls to the console during runtime
     # cass.riotapi.print_calls(True)
 
-    cass.riotapi.set_load_policy(cass.type.core.common.LoadPolicy.eager)
+    cass.riotapi.set_load_policy(LoadPolicy.eager)
     cass.riotapi.set_rate_limits((1500, 10), (90000, 600))
     # print("api setup complete...")
 
 
-def init():
-    setup_sql_alchemy()
-    setup_riot_api()
-    print("init complete...")
+def check_exists(item_type, item_id):
+    return global_session.query(item_type).filter(item_type.id == item_id).first() is not None
+
+
+def insert_summoner_controller(summoner_name):
+    return insert_summoner(summoner_obj(summoner_name))
+
+
+def insert_summoner(summoner_item):
+    summoner_id = summoner_item.id
+    summoner = BackendSummoner(id=summoner_id, user=summoner_item.name, level=summoner_item.level,
+                               icon=summoner_item.profile_icon_id, revision_date=summoner_item.modify_date)
+    if check_exists(BackendSummoner, summoner_id):
+        old = global_session.query(BackendSummoner).filter(BackendSummoner.id == summoner_id).first()
+        global_session.delete(old)
+        global_session.commit()
+        global_session.add(summoner)
+        global_session.commit()
+        return False
+    else:
+        global_session.add(summoner)
+        global_session.commit()
+        return True
+
+
+def insert_champion(champion):
+    api_champion = champion
+    champion_id = api_champion.id
+    champion = BackendChampion(id=champion_id, name=champion.name, title=champion.title)
+    if check_exists(BackendChampion, champion_id):
+        old = global_session.query(BackendChampion).filter(BackendChampion.id == champion_id).first()
+        global_session.delete(old)
+        global_session.commit()
+        global_session.add(champion)
+        global_session.commit()
+    else:
+        global_session.add(champion)
+        global_session.commit()
+
+
+def check_mastery_exists(summoner_id, champion_id):
+    return global_session.query(BackendMastery).filter(BackendMastery.summoner_id == summoner_id) \
+               .filter(BackendMastery.champion_id == champion_id).first() is not None
+
+
+def insert_champion_mastery(summoner, champion_obj):
+    print("Started {0}...".format(champion_obj.name))
+    try:
+        api_mastery = cass.riotapi.get_champion_mastery(summoner=summoner, champion=champion_obj)
+        api_successful = True
+    except cass.type.api.exception.APIError:
+        print("500 Error status for {0}...".format(champion_obj.name))
+        api_successful = False
+    if api_successful:
+        summoner_id = summoner.id
+        champion_id = champion_obj.id
+        mastery = BackendMastery(summoner_id=summoner_id, champion_id=champion_id, level=api_mastery.level,
+                                 points=api_mastery.points, since_last_level=api_mastery.points_since_last_level,
+                                 until_next_level=api_mastery.points_until_next_level,
+                                 last_played=api_mastery.last_played,
+                                 high_grade=api_mastery.highest_grade, chest=api_mastery.chest_granted)
+        if check_mastery_exists(summoner_id, champion_id):
+            old = global_session.query(BackendMastery).filter(BackendMastery.summoner_id == summoner_id).filter(
+                BackendMastery.champion_id == champion_id).first()
+            global_session.delete(old)
+            global_session.commit()
+            global_session.add(mastery)
+            global_session.commit()
+        else:
+            global_session.add(mastery)
+            global_session.commit()
+        print("Finished {0}...".format(champion_obj.name))
+
+
+def generate_mastery_controller(summoner_name):
+    generate_mastery(summoner_obj(summoner_name))
+
+
+def generate_mastery(summoner_item):
+    # Fill the database with the user's information
+    # list_champions, summoner = generation_resources(summoner_name)
+    list_champions = cass.riotapi.get_champions()
+    print("Pulled summoner. Got {0}.".format(summoner_item.name))
+    print("Generating champion mastery information")
+    for champ in list_champions:
+        insert_champion(champ)
+        insert_champion_mastery(summoner_item, champ)
+
+
+def select_summoner_champion_mastery_controller(summoner_name):
+    return select_summoner_champion_mastery(summoner_obj(summoner_name))
+
+
+def select_summoner_champion_mastery(summoner_item):
+    # SELECT Champion.*, Mastery.* FROM Champion, Mastery, Summoner
+    #   WHERE Summoner.id == Mastery.summoner_id
+    #       AND Champion.id == Mastery.champion_id
+    #       AND Summoner.user == 'blackpan2'; # Blackpan2 as an example
+    results = global_session.query(BackendMastery).filter(BackendMastery.summoner_id == summoner_item.id).all()
+    unsorted_collection = []
+    for item in results:
+        # noinspection PyDictCreation
+        return_item = {}
+        return_item['id'] = item.summoner_id
+        return_item['summoner'] = summoner_item.name
+        return_item['champion'] = cass.riotapi.get_champion_by_id(item.champion_id).name
+        print(cass.riotapi.get_champion_by_id(item.champion_id).name)
+        return_item['level'] = item.level
+        return_item['points'] = item.points
+        return_item['since_last_level'] = item.since_last_level
+        return_item['until_next_level'] = item.until_next_level
+        return_item['last_played'] = item.last_played
+        return_item['high_grade'] = item.high_grade
+        return_item['chest'] = item.chest
+        # print(return_item)
+        unsorted_collection.append(return_item)
+
+    return_collection = sorted(sorted(unsorted_collection, key=itemgetter('champion'), reverse=True),
+                               key=itemgetter('points'), reverse=True)
+    return return_collection
+
+
+def summoner_obj(summoner_name):
+    return cass.riotapi.get_summoner_by_name(name=summoner_name)
 
 
 def main(summoner_name):
     init()
-    new = insert_summoner(summoner_name)
+    summoner = summoner_obj(summoner_name)
+    new = insert_summoner(summoner)
     if new:
-        generate_mastery(summoner_name)
-    result = select_summoner_champion_mastery(summoner_name)
+        generate_mastery(summoner)
+    result = select_summoner_champion_mastery(summoner)
     print(result)
 
 
+def main_controller(summoner_name):
+    init()
+    new = insert_summoner_controller(summoner_name)
+    if new:
+        generate_mastery_controller(summoner_name)
+    result = select_summoner_champion_mastery_controller(summoner_name)
+    # print(result)
+
+
 if __name__ == "__main__":
-    main("blackpan2")
+    # main("blackpan2")
+    main_controller("blackpan2")
+    main_controller("rivverrun")
