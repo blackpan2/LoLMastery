@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block body %}
+    The champion mastery list for <h1>{{ session['username'] }}</h1>
+    {% for champion in session['mastery_data'] %}
+        <div class="champion-mastery">
+            {#            <p>{{ champion[0] }} {{ champion[1] }} {{ champion[2] }}</p>#}
+            <h3>Champion:</h3>
+            <p>{{ champion[0] }}</p><br>
+            <div class="champion-mastery-detail">
+                <h3>Mastery Level:</h3>
+                <p>{{ champion[1] }}</p>
+                <h3>Points:</h3>
+                <p>{{ champion[2] }}</p>
+            </div>
+
+        </div>
+    {% endfor %}
+
+    <p><a href="{{ url_for('search_summoner') }}">Search again</a></p>
+{% endblock %}
