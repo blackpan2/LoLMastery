@@ -1,10 +1,8 @@
-from operator import itemgetter
 from os import environ
 import cassiopeia as cass
 import sqlalchemy
 from cassiopeia.type.core.common import LoadPolicy
 from cassiopeia import riotapi
-from past.builtins import cmp
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, String, Integer, ForeignKey, Boolean, DateTime
@@ -218,6 +216,10 @@ def select_summoner_champion_mastery(summoner_item):
         return_item['chest'] = item.chest
         unsorted_collection.append(return_item)
     return multi_key_sort(unsorted_collection, ['-points', 'champion'])
+
+
+def cmp(a, b):
+    return (a > b) - (a < b)
 
 
 def multi_key_sort(items, columns):
