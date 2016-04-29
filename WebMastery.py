@@ -28,6 +28,7 @@ app.secret_key = urandom(24)
 @app.route('/', methods=['GET'])
 def show_home():
     BackEnd.init()
+    session['static_data'] = ""
     return render_template('home.html')
 
 
@@ -53,7 +54,9 @@ def show_mastery():
         BackEnd.generate_mastery_controller(session['summoner_name'])
         flash('Mastery Updated')
         return redirect(url_for('show_mastery'))
-    session['mastery_data'] = BackEnd.select_summoner_champion_mastery_controller(session['summoner_name'])
+    session['mastery_data'], summoner = BackEnd.select_summoner_champion_mastery_controller(session['summoner_name'])
+    session['static_data'] = BackEnd.static_data_controller()
+    session['icon_url'] = 'http://ddragon.leagueoflegends.com/cdn/' + str(session['static_data']['version']) + '/img/profileicon/' + str(summoner.icon) + '.png'
     return render_template('mastery.html', session=session)
 
 

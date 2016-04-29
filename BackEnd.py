@@ -206,8 +206,14 @@ def generate_mastery(summoner_item):
     return failed_updates
 
 
+def summoner_obj(summoner_name):
+    return cass.riotapi.get_summoner_by_name(name=summoner_name)
+
+
 def select_summoner_champion_mastery_controller(summoner_name):
-    return select_summoner_champion_mastery(summoner_obj(summoner_name))
+    obj = summoner_obj(summoner_name)
+    table = global_session.query(BackendSummoner).filter(BackendSummoner.id == obj.id).one()
+    return select_summoner_champion_mastery(obj), table
 
 
 def select_summoner_champion_mastery(summoner_item):
@@ -248,8 +254,10 @@ def multi_key_sort(items, columns):
     return sorted(items, key=cmp_to_key(comparator))
 
 
-def summoner_obj(summoner_name):
-    return cass.riotapi.get_summoner_by_name(name=summoner_name)
+def static_data_controller():
+    return_item = {}
+    return_item['version'] = cass.riotapi.get_versions()[0]
+    return return_item
 
 
 def main(summoner_name):

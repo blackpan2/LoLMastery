@@ -19,7 +19,9 @@
  */
 function toUpper() {
     var str = document.getElementById("upper").innerHTML;
-    var first = str.slice(0,1);
+    var first = str.slice(0, 1);
     var second = str.slice(1);
     document.getElementById("upper").innerHTML = first.toUpperCase() + second.toLowerCase();
 }
+
+

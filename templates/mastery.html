@@ -1,8 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
-    The champion mastery list for <h1 id="upper">{{ session['summoner_name'] }}</h1>
+    <p>The champion mastery list for<p></p>
+    <h1 id="summonerIcon">
+        <span>
+            <img id="summonerIcon" src={{ session['icon_url'] }} alt="summoner_icon">
+            <span id="upper">{{ session['summoner_name'] }}</span>
+        </span>
+    </h1>
     {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
-    <form action="{{ url_for('show_mastery') }}" method=post style="float: right">
+    <form id="updateButton" action="{{ url_for('show_mastery') }}" method=post>
         <dl>
             <dd><input type=submit value=Update>
         </dl>
@@ -10,15 +16,16 @@
     <p><a href="{{ url_for('search_summoner') }}">Search again</a></p>
 
     {% for champion in session['mastery_data'] %}
-        <div class="champion-mastery">
-            <h3>Champion:</h3>
-            <p>{{ champion['champion'] }}</p><br>
-            <div class="champion-mastery-detail">
-                <h3>Mastery Level:</h3>
-                <p>{{ champion['level'] }}</p>
-                <h3>Points:</h3>
-                <p>{{ champion['points'] }}</p>
-            </div>
+    <div class="champion-mastery">
+        <h3>Champion:</h3>
+        <p>{{ champion['champion'] }}</p><br>
+        <div class="champion-mastery-detail">
+            <h3>Mastery Level:</h3>
+            <p>{{ champion['level'] }}</p>
+            <h3>Points:</h3>
+{#            Todo add seperator to numeric #}
+            <p>{{ champion['points'] }}</p>
         </div>
+    </div>
     {% endfor %}
 {% endblock %}

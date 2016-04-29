@@ -25,6 +25,16 @@ h2 {
     font-variant: small-caps;
 }
 
+#summonerIcon {
+    font-size: 50px;
+    width: auto;
+    height: 1em;
+}
+
+#updateButton {
+    float: right;
+}
+
 .page {
     margin: 2em auto;
     /*width: 50%;*/
