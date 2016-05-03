@@ -1,6 +1,26 @@
 {% extends "layout.html" %}
-{% block body %}
-    <p>Welcome to the League of Legends Mastery Tracker, search a summoner to find
-    their mastery history.</p>
-    <p><a href="{{ url_for('search_summoner') }}">Search now</a></p>
+{% block jumbotron %}
+    <h1>Champion Mastery</h1>
+    <p class="lead">See how you're doing on a champion and find resources to help you improve.</p>
+{% endblock %}
+{% block content %}
+    <div class="row marketing">
+        <div class="col-lg-6">
+            <h4>History</h4>
+            <p>Checkout how you've been doing so far and how wide your champion pool really is.</p>
+
+            <h4>How Tos</h4>
+            <p>Learning a champion? Find resources about how you can improve.</p>
+
+            <h4>Compete</h4>
+            <p>Show off to your friends your mastery collection.</p>
+        </div>
+        <div class="col-lg-6">
+            <h4>Builds</h4>
+            <p>Find resources to get new builds for champions you love and maybe some your just starting out with.</p>
+
+            <h4>Community</h4>
+            <p>Collection of art and videos about a champion.</p>
+        </div>
+    </div>
 {% endblock %}

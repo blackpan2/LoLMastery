@@ -1,10 +1,90 @@
 {% extends "mastery_base.html" %}
+{% block jumbotron %}
+    <h1 id="summonerIcon">
+            <span>
+                <img class="img-circle" id="summonerIcon" src={{ session['icon_url'] }} alt="SummonerIcon">
+                <span id="upper">{{ session['summoner_name'] }}</span>
+            </span>
+    </h1>
+    {#    <p class="lead">Sub heading</p>#}
+{% endblock %}
+
 {% block mastery_content %}
-    <div class="champion-mastery">
-        {% for champion in session['mastery_data'] %}
-            <a href="{{ url_for('champion_details',summoner_name=session['summoner_name'], champion=champion['champion']) }}">
-                <img class="championPicture" alt={{ champion['champion'] }}>
-            </a>
-        {% endfor %}
-    </div>
+    <h3>Show:</h3>
+    <form action="{{ url_for('show_mastery', summoner_name=session['summoner_name']) }}" method=post>
+        <div class="btn-group" role="group">
+            <button type="button" id="restrict-all" onclick="showAll()" class="btn btn-default">All</button>
+            <button type="button" id="restrict-0" onclick="show0()" class="btn btn-default">Not Started</button>
+            <button type="button" id="restrict-1" onclick="show1()" class="btn btn-default">Level 1</button>
+            <button type="button" id="restrict-2" onclick="show2()" class="btn btn-default">Level 2</button>
+            <button type="button" id="restrict-3" onclick="show3()" class="btn btn-default">Level 3</button>
+            <button type="button" id="restrict-4" onclick="show4()" class="btn btn-default">Level 4</button>
+            <button type="button" id="restrict-5" onclick="show5()" class="btn btn-default">Level 5</button>
+            <input class="btn btn-success" type=submit value=Update>
+        </div>
+    </form>
+    <hr>
+
+    {% for champion in session['mastery_data'] %}
+        <br class="restrict-all restrict-{{ champion['level'] }}" id="{{ champion['key'] }}">
+        <div class="panel panel-default restrict-all restrict-{{ champion['level'] }}" role="button"
+             data-toggle="collapse" href="#collapse-{{ champion['champion_id'] }}">
+            <div class="panel-heading">
+                <div class="row">
+                    <div class="col-md-12">
+                        <h3 class="panel-title">Champion: {{ champion['champion'] }}</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="panel-body">
+                <div class="row">
+                    <div class="col-md-2">
+                        <img class="championPicture img-rounded" alt={{ champion['champion'] }}>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="row">
+                            <div class="col-md-6"><h4>Mastery Points:</h4>
+                                <p>{{ champion['points'] }}</p></div>
+                            <div class="col-md-6"><h4>Mastery Level:</h4>
+                                <p>{{ champion['level'] }}</p></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6"><h4>Last Played:</h4>
+                                <p>{{ champion['last_played'] }}</p></div>
+                            <div class="col-md-6"><h4>Points to next level:</h4>
+                                <p>{{ champion['until_next_level'] }}</p></div>
+                        </div>
+                    </div>
+                    <div class="col-md-2"><img class="mastery-icon img-responsive" alt={{ champion['level'] }}></div>
+                </div>
+            </div>
+        </div>
+        <div class="collapse" id="collapse-{{ champion['champion_id'] }}">
+            <div class="well">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h3>Champion stats:</h3>
+                        <a href="http://champion.gg/champion/{{ champion['key'] }}" target="_blank">Champion.GG</a>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>Recent Pro Builds:</h3>
+                        <a href="http://www.probuilds.net/champions/details/{{ champion['key'] }}"
+                           target="_blank">ProBuilds.net</a>
+                    </div>
+                    <div class="col-md-4">
+                        <h3>Ditch the Meta:</h3>
+                        <a href="http://offmeta.com/champion/{{ champion['key'] }}" target="_blank">OffMeta.com</a>
+                    </div>
+                </div>
+                <h3>Lore:</h3>
+                <p class="lore-{{ champion['champion_id'] }}">{{ champion['lore']|safe }}</p>
+
+            </div>
+        </div>
+    {% endfor %}
+{% endblock %}
+
+{% block scripts %}
+    <script src={{ url_for('static', filename='mastery.js') }}></script>
+    <body onload="toUpper(); FormatNumberBy3Loop(); championPicture(); masteryIcon();">
 {% endblock %}

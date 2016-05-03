@@ -117,17 +117,47 @@ function setChampionPicture(name) {
 }
 
 function masteryIcon() {
-    var allLevels = document.getElementsByClassName("masteryIcon");
+    var allLevels = document.getElementsByClassName("mastery-icon");
     for (var i = 0; i < allLevels.length; i++) {
         var numeric = allLevels[i].alt;
-        document.getElementsByClassName("masteryIcon")[i].src = "/static/mastery_icons/tier" + numeric + ".png";
+        document.getElementsByClassName("mastery-icon")[i].src = "/static/mastery_icons/tier" + numeric + ".png";
     }
 }
 
-function masteryPicture() {
-    var champ_name = document.getElementById("champion-mastery-pic").className;
-    var champ_url = "url(" + setChampionPicture(champ_name) + ")";
-    $("#champion-mastery-pic").css("background-image", champ_url);
-
+function showAll() {
+    $('.restrict-all').show()
 }
 
+function hideAll() {
+    $('.restrict-all').hide()
+}
+
+function show0() {
+    hideAll()
+    $('.restrict-0').show()
+}
+
+function show1() {
+    hideAll()
+    $('.restrict-1').show()
+}
+
+function show2() {
+    hideAll()
+    $('.restrict-2').show()
+}
+
+function show3() {
+    hideAll()
+    $('.restrict-3').show()
+}
+
+function show4() {
+    hideAll()
+    $('.restrict-4').show()
+}
+
+function show5() {
+    hideAll()
+    $('.restrict-5').show()
+}

@@ -28,12 +28,16 @@ app.secret_key = urandom(24)
 @app.route('/', methods=['GET'])
 def show_home():
     BackEnd.init()
+    session['init_complete'] = True
     session['static_data'] = ""
     return render_template('home.html')
 
 
 @app.route('/search', methods=['GET', 'POST'])
 def search_summoner():
+    if not session.get('init_complete'):
+        BackEnd.init()
+        session['init_complete'] = True
     if request.method == 'POST':
         if request.form['summoner_name'] == "":
             return render_template('search.html')
@@ -50,6 +54,10 @@ def search_summoner():
 
 @app.route('/mastery/<summoner_name>', methods=['GET', 'POST'])
 def show_mastery(summoner_name):
+    if not session.get('init_complete'):
+        BackEnd.init()
+        session['init_complete'] = True
+    session['summoner_name'] = summoner_name
     if request.method == 'POST':
         BackEnd.generate_mastery_controller(summoner_name)
         flash('Mastery Updated')
@@ -59,18 +67,6 @@ def show_mastery(summoner_name):
     session['icon_url'] = 'http://ddragon.leagueoflegends.com/cdn/' + str(
         session['static_data']['version']) + '/img/profileicon/' + str(summoner.icon) + '.png'
     return render_template('mastery.html', session=session)
-
-
-@app.route('/mastery/<summoner_name>/<champion>', methods=['GET', 'POST'])
-def champion_details(summoner_name, champion):
-    if request.method == 'POST':
-        BackEnd.generate_mastery_controller(summoner_name)
-        flash('Mastery Updated')
-        return redirect(url_for('show_mastery', summoner_name=session['summoner_name']))
-    for item in session['mastery_data']:
-        if item['champion'] == champion:
-            session['champ'] = item
-    return render_template('mastery_detail.html', session=session)
 
 
 if __name__ == '__main__':

@@ -50,6 +50,8 @@ class BackendChampion(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(20))
     title = Column(String(50))
+    key = Column(String(20))
+    lore = Column(String())
 
     def __repr__(self):
         return "<Champion(name='%s', title='%s', id='%i')>" % (
@@ -138,10 +140,16 @@ def insert_summoner(summoner_item):
         return True
 
 
+def fix_lore(lore):
+    lore = str(lore).replace("''", '"')
+    return lore
+
+
 def insert_champion(champion):
     api_champion = champion
     champion_id = api_champion.id
-    champion = BackendChampion(id=champion_id, name=champion.name, title=champion.title)
+    lore = fix_lore(champion.lore)
+    champion = BackendChampion(id=champion_id, name=champion.name, title=champion.title, key=champion.key, lore=lore)
     if check_exists(BackendChampion, champion_id):
         old = global_session.query(BackendChampion).filter(BackendChampion.id == champion_id).first()
         global_session.delete(old)
@@ -226,16 +234,20 @@ def select_summoner_champion_mastery(summoner_item):
         # noinspection PyDictCreation
         return_item = {}
         return_item['id'] = item.summoner_id
+        return_item['champion_id'] = item.champion_id
         return_item['summoner'] = summoner_item.name
-        return_item['champion'] = global_session.query(BackendChampion).filter(
-            BackendChampion.id == item.champion_id).one().name
         return_item['level'] = item.level
         return_item['points'] = item.points
         return_item['since_last_level'] = item.since_last_level
         return_item['until_next_level'] = item.until_next_level
         return_item['last_played'] = item.last_played
-        return_item['high_grade'] = item.high_grade
-        return_item['chest'] = item.chest
+        # return_item['high_grade'] = item.high_grade # Information is not in API but is in library
+        # return_item['chest'] = item.chest # Information is not in API but is in library
+        champ = global_session.query(BackendChampion).filter(
+            BackendChampion.id == item.champion_id).one()
+        return_item['champion'] = champ.name
+        return_item['key'] = champ.key
+        return_item['lore'] = champ.lore
         unsorted_collection.append(return_item)
     return multi_key_sort(unsorted_collection, ['-points', 'champion'])
 
