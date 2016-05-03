@@ -1,0 +1,35 @@
+{% extends "mastery_base.html" %}
+{% block mastery_content %}
+    <form class="searchButton" action="{{ url_for('show_mastery', summoner_name=session['summoner_name']) }}">
+        <dl>
+            <dd><input type=submit value="Return">
+        </dl>
+    </form>
+    <div>
+        <div id="championDetails" style="position: fixed; float: left; width: 40%;">
+            <div class="champion-mastery">
+                {% if session['champ']['level'] is not equalto 0 %}
+                    <img class="masteryIcon" alt={{ session['champ']['level'] }}>
+                {% endif %}
+                <img class="championPicture" alt={{ session['champ']['champion'] }}>
+                <br>
+                <h3>Champion:</h3>
+                <p>{{ session['champ']['champion'] }}</p><br>
+                <div class="champion-mastery-detail">
+                    <h3>Mastery Level:</h3>
+                    <p>{{ session['champ']['level'] }}</p>
+                    <h3>Points:</h3>
+                    <p class="formatNumber3">{{ session['champ']['points'] }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="champion-mastery" style="width: 60%; float: right;">
+            {% for champion in session['mastery_data'] %}
+                <a href="{{ url_for('champion_details', summoner_name=session['summoner_name'],
+                champion=champion['champion']) }}">
+                    <img class="championPicture" id={{ champion['champion'] }} alt={{ champion['champion'] }}>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

@@ -43,21 +43,34 @@ def search_summoner():
             failed = BackEnd.generate_mastery_controller(session['summoner_name'])
             for champion in failed:
                 flash(champion + " failed to update, please retry")
-        return redirect(url_for('show_mastery'))
+        return redirect(url_for('show_mastery', summoner_name=session['summoner_name']))
     # show the form, it wasn't submitted
     return render_template('search.html')
 
 
-@app.route('/mastery', methods=['GET', 'POST'])
-def show_mastery():
+@app.route('/mastery/<summoner_name>', methods=['GET', 'POST'])
+def show_mastery(summoner_name):
     if request.method == 'POST':
-        BackEnd.generate_mastery_controller(session['summoner_name'])
+        BackEnd.generate_mastery_controller(summoner_name)
         flash('Mastery Updated')
-        return redirect(url_for('show_mastery'))
-    session['mastery_data'], summoner = BackEnd.select_summoner_champion_mastery_controller(session['summoner_name'])
+        return redirect(url_for('show_mastery', summoner_name=session['summoner_name']))
+    session['mastery_data'], summoner = BackEnd.select_summoner_champion_mastery_controller(summoner_name)
     session['static_data'] = BackEnd.static_data_controller()
-    session['icon_url'] = 'http://ddragon.leagueoflegends.com/cdn/' + str(session['static_data']['version']) + '/img/profileicon/' + str(summoner.icon) + '.png'
+    session['icon_url'] = 'http://ddragon.leagueoflegends.com/cdn/' + str(
+        session['static_data']['version']) + '/img/profileicon/' + str(summoner.icon) + '.png'
     return render_template('mastery.html', session=session)
+
+
+@app.route('/mastery/<summoner_name>/<champion>', methods=['GET', 'POST'])
+def champion_details(summoner_name, champion):
+    if request.method == 'POST':
+        BackEnd.generate_mastery_controller(summoner_name)
+        flash('Mastery Updated')
+        return redirect(url_for('show_mastery', summoner_name=session['summoner_name']))
+    for item in session['mastery_data']:
+        if item['champion'] == champion:
+            session['champ'] = item
+    return render_template('mastery_detail.html', session=session)
 
 
 if __name__ == '__main__':

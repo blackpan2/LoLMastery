@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block body %}
+    <p>The champion mastery list for<p></p>
+    <h1 id="summonerIcon">
+        <span>
+            <img id="summonerIcon" src={{ session['icon_url'] }} alt="SummonerIcon">
+            <span id="upper">{{ session['summoner_name'] }}</span>
+        </span>
+    </h1>
+    {% if error %}<p class=error><strong>Error:</strong> {{ error }}{% endif %}
+    <form class="searchButton" action="{{ url_for('search_summoner') }}">
+        <dl>
+            <dd><input type=submit value="Search again">
+        </dl>
+    </form>
+    <form class="searchButton" id="updateButton"
+          action="{{ url_for('show_mastery', summoner_name=session['summoner_name']) }}"
+          method=post>
+        <dl>
+            <dd><input type=submit value=Update>
+        </dl>
+    </form>
+    {% block mastery_content %}{% endblock %}
+{% endblock %}
+{% block scripts %}
+    <script src={{ url_for('static', filename='mastery.js') }}></script>
+    <body onload="toUpper(); FormatNumberBy3Loop(); championPicture(); masteryIcon(); masteryPicture();">
+{% endblock %}

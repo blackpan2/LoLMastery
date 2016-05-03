@@ -1,6 +1,10 @@
 /BackEnd.db
 .idea/
 /static/jquery.js
+/static/dragontail-6.8.1
+/static/css
+/static/fonts
+/static/js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -15,7 +19,6 @@ __pycache__/
 env/
 build/
 develop-eggs/
-/static/dragontail-6.8.1
 dist/
 downloads/
 eggs/

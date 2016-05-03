@@ -62,7 +62,72 @@ function FormatNumberBy3(num) {
 
 function FormatNumberBy3Loop() {
     var formatList = document.getElementsByClassName("formatNumber3");
-    for (i = 0; i < formatList.length; i++) {
-        document.getElementsByClassName("formatNumber3")[i].innerHTML = FormatNumberBy3(formatList[i].innerHTML);
+    for (var i = 0; i < formatList.length; i++) {
+        document.getElementsByClassName("formatNumber3")[i].innerHTML =
+            FormatNumberBy3(formatList[i].innerHTML);
     }
 }
+
+function championPicture() {
+    var allChamps = document.getElementsByClassName("championPicture");
+    for (var i = 0; i < allChamps.length; i++) {
+        var name = allChamps[i].alt;
+        document.getElementsByClassName("championPicture")[i].src = setChampionPicture(name);
+    }
+}
+
+function setChampionPicture(name) {
+    // Handle special cases of multi word names
+    if (name == "Tahm") {
+        name = 'TahmKench';
+    } else if (name == "Miss") {
+        name = 'MissFortune';
+    } else if (name == "Aurelion") {
+        name = 'AurelionSol';
+    } else if (name == "Twisted") {
+        name = 'TwistedFate';
+    } else if (name == 'Fiddlesticks') {
+        name = 'FiddleSticks';
+    } else if (name == 'Jarvan') {
+        name = 'JarvanIV';
+    } else if (name == 'Master') {
+        name = 'MasterYi';
+    } else if (name == "Cho'Gath") {
+        name = 'Chogath';
+    } else if (name == 'Xin') {
+        name = "XinZhao";
+    } else if (name == 'Dr.') {
+        name = 'DrMundo';
+    } else if (name == "Kha'Zix") {
+        name = 'Khazix';
+    } else if (name == "Kog'Maw") {
+        name = 'KogMaw';
+    } else if (name == "LeBlanc") {
+        name = 'Leblanc';
+    } else if (name == "Lee") {
+        name = 'LeeSin';
+    } else if (name == "Rek'Sai") {
+        name = 'RekSai';
+    } else if (name == "Vel'Koz") {
+        name = 'Velkoz';
+    } else if (name == 'Wukong') {
+        name = 'MonkeyKing';
+    }
+    return "http://ddragon.leagueoflegends.com/cdn/6.9.1/img/champion/".concat(name).concat(".png");
+}
+
+function masteryIcon() {
+    var allLevels = document.getElementsByClassName("masteryIcon");
+    for (var i = 0; i < allLevels.length; i++) {
+        var numeric = allLevels[i].alt;
+        document.getElementsByClassName("masteryIcon")[i].src = "/static/mastery_icons/tier" + numeric + ".png";
+    }
+}
+
+function masteryPicture() {
+    var champ_name = document.getElementById("champion-mastery-pic").className;
+    var champ_url = "url(" + setChampionPicture(champ_name) + ")";
+    $("#champion-mastery-pic").css("background-image", champ_url);
+
+}
+
