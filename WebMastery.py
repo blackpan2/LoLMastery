@@ -18,10 +18,7 @@ from os import urandom
 from flask import Flask, request, redirect, url_for, render_template, session, flash
 import BackEnd as BackEnd
 
-# create our little application :)
 app = Flask(__name__)
-app.config.from_object(__name__)
-app.config.from_envvar('WEBMASTERY_SETTINGS', silent=True)
 app.secret_key = urandom(24)
 
 

@@ -1,10 +1,5 @@
 /BackEnd.db
 .idea/
-/static/jquery.js
-/static/dragontail-6.8.1
-/static/css
-/static/fonts
-/static/js
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
