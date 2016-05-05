@@ -66,6 +66,15 @@ def show_mastery(summoner_name):
     return render_template('mastery.html', session=session)
 
 
+@app.route('/champion/<champion_key>', methods=['GET', 'POST'])
+def show_detail(champion_key):
+    if not session.get('init_complete'):
+        BackEnd.init()
+        session['init_complete'] = True
+    session['champion_data'] = BackEnd.select_champion(champion_key=champion_key)
+    return render_template('mastery_detail.html', session=session)
+
+
 if __name__ == '__main__':
     app.debug = True
     app.run()

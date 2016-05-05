@@ -24,7 +24,6 @@ function toUpper() {
     document.getElementById("upper").innerHTML = first.toUpperCase() + second.toLowerCase();
 }
 
-
 /* Function to format a number with separators. returns formatted number.
  * num - the number to be formatted
  * decimal point - the decimal point character. if skipped, "." is used
@@ -77,42 +76,6 @@ function championPicture() {
 }
 
 function setChampionPicture(name) {
-    // Handle special cases of multi word names
-    if (name == "Tahm") {
-        name = 'TahmKench';
-    } else if (name == "Miss") {
-        name = 'MissFortune';
-    } else if (name == "Aurelion") {
-        name = 'AurelionSol';
-    } else if (name == "Twisted") {
-        name = 'TwistedFate';
-    } else if (name == 'Fiddlesticks') {
-        name = 'FiddleSticks';
-    } else if (name == 'Jarvan') {
-        name = 'JarvanIV';
-    } else if (name == 'Master') {
-        name = 'MasterYi';
-    } else if (name == "Cho'Gath") {
-        name = 'Chogath';
-    } else if (name == 'Xin') {
-        name = "XinZhao";
-    } else if (name == 'Dr.') {
-        name = 'DrMundo';
-    } else if (name == "Kha'Zix") {
-        name = 'Khazix';
-    } else if (name == "Kog'Maw") {
-        name = 'KogMaw';
-    } else if (name == "LeBlanc") {
-        name = 'Leblanc';
-    } else if (name == "Lee") {
-        name = 'LeeSin';
-    } else if (name == "Rek'Sai") {
-        name = 'RekSai';
-    } else if (name == "Vel'Koz") {
-        name = 'Velkoz';
-    } else if (name == 'Wukong') {
-        name = 'MonkeyKing';
-    }
     return "http://ddragon.leagueoflegends.com/cdn/6.9.1/img/champion/".concat(name).concat(".png");
 }
 
@@ -120,7 +83,7 @@ function masteryIcon() {
     var allLevels = document.getElementsByClassName("mastery-icon");
     for (var i = 0; i < allLevels.length; i++) {
         var numeric = allLevels[i].alt;
-        document.getElementsByClassName("mastery-icon")[i].src = "/static/mastery_icons/tier" + numeric + ".png";
+        document.getElementsByClassName("mastery-icon")[i].src = "/static/images/tier" + numeric + ".png";
     }
 }
 
@@ -133,31 +96,31 @@ function hideAll() {
 }
 
 function show0() {
-    hideAll()
+    hideAll();
     $('.restrict-0').show()
 }
 
 function show1() {
-    hideAll()
+    hideAll();
     $('.restrict-1').show()
 }
 
 function show2() {
-    hideAll()
+    hideAll();
     $('.restrict-2').show()
 }
 
 function show3() {
-    hideAll()
+    hideAll();
     $('.restrict-3').show()
 }
 
 function show4() {
-    hideAll()
+    hideAll();
     $('.restrict-4').show()
 }
 
 function show5() {
-    hideAll()
+    hideAll();
     $('.restrict-5').show()
 }

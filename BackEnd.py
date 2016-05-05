@@ -50,7 +50,7 @@ class BackendChampion(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(20))
     title = Column(String(50))
-    key = Column(String(20))
+    key = Column(String())
     lore = Column(String())
 
     def __repr__(self):
@@ -252,6 +252,13 @@ def select_summoner_champion_mastery(summoner_item):
     return multi_key_sort(unsorted_collection, ['-points', 'champion'])
 
 
+def select_champion(champion_key):
+    item = global_session.query(BackendChampion).filter(BackendChampion.key == champion_key).one()
+    return_item = {'id': item.id, 'name': item.name, 'title': item.title, 'key': item.key, 'lore': item.lore}
+
+    return return_item
+
+
 def cmp(a, b):
     return (a > b) - (a < b)
 
@@ -269,6 +276,7 @@ def multi_key_sort(items, columns):
 def static_data_controller():
     return_item = {}
     return_item['version'] = cass.riotapi.get_versions()[0]
+
     return return_item
 
 

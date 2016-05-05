@@ -39,7 +39,7 @@
             <div class="panel-body">
                 <div class="row">
                     <div class="col-md-2">
-                        <img class="championPicture img-rounded" alt={{ champion['champion'] }}>
+                        <img class="championPicture img-rounded" alt={{ champion['key'] }}>
                     </div>
                     <div class="col-md-8">
                         <div class="row">
@@ -61,24 +61,39 @@
         </div>
         <div class="collapse" id="collapse-{{ champion['champion_id'] }}">
             <div class="well">
-                <div class="row">
-                    <div class="col-md-4">
-                        <h3>Champion stats:</h3>
-                        <a href="http://champion.gg/champion/{{ champion['key'] }}" target="_blank">Champion.GG</a>
+                <ul class="nav nav-tabs nav-justified ">
+                    <li class="active"><a data-toggle="tab" href="#home-{{ champion['champion_id'] }}">Information</a>
+                    </li>
+                    <li><a data-toggle="tab" href="#menu1-{{ champion['champion_id'] }}">Lore</a></li>
+                    <li><a href=" {{ url_for('show_detail', champion_key=champion['key']) }}">Skins
+                        & Champion Spotlight</a>
+                    </li>
+                </ul>
+                <div class="tab-content">
+                    <div id="home-{{ champion['champion_id'] }}" class="tab-pane fade in active">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <h3>Champion stats:</h3>
+                                <a href="http://champion.gg/champion/{{ champion['key'] }}"
+                                   target="_blank">Champion.GG</a>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>Recent Pro Builds:</h3>
+                                <a href="http://www.probuilds.net/champions/details/{{ champion['key'] }}"
+                                   target="_blank">ProBuilds.net</a>
+                            </div>
+                            <div class="col-md-4">
+                                <h3>Ditch the Meta:</h3>
+                                <a href="http://offmeta.com/champion/{{ champion['key'] }}"
+                                   target="_blank">OffMeta.com</a>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-4">
-                        <h3>Recent Pro Builds:</h3>
-                        <a href="http://www.probuilds.net/champions/details/{{ champion['key'] }}"
-                           target="_blank">ProBuilds.net</a>
-                    </div>
-                    <div class="col-md-4">
-                        <h3>Ditch the Meta:</h3>
-                        <a href="http://offmeta.com/champion/{{ champion['key'] }}" target="_blank">OffMeta.com</a>
+                    <div id="menu1-{{ champion['champion_id'] }}" class="tab-pane fade">
+                        <h3>Lore</h3>
+                        <p class="lore-{{ champion['champion_id'] }}">{{ champion['lore']|safe }}</p>
                     </div>
                 </div>
-                <h3>Lore:</h3>
-                <p class="lore-{{ champion['champion_id'] }}">{{ champion['lore']|safe }}</p>
-
             </div>
         </div>
     {% endfor %}
